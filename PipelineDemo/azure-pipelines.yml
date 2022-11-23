@@ -1,0 +1,28 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: AzureKeyVault@2
+  inputs:
+    azureSubscription: 'DemoPipelineServConn'
+    KeyVaultName: 'pipeline-demo-keyv'
+    SecretsFilter: 'LocalAdmin'
+    RunAsPreJob: false
+
+- task: AzureResourceManagerTemplateDeployment@3
+  inputs:
+    deploymentScope: 'Resource Group'
+    azureResourceManagerConnection: 'DemoPipelineServConn'
+    subscriptionId: '41fc6888-1e36-454a-8d37-28dc65749d21'
+    action: 'Create Or Update Resource Group'
+    resourceGroupName: 'pipeline-demo-rg'
+    location: 'East US'
+    templateLocation: 'Linked artifact'
+    csmFile: 'azuredeploy.json'
+    csmParametersFile: 'azuredeploy.parameters.json'
+    overrideParameters: '-adminPassword $(LocalAdmin)'
+    deploymentMode: 'Incremental'
+    deploymentName: 'TemplateDeploy'
